@@ -41,11 +41,18 @@ def add_snippet_page(request):
             messages.add_message(request, messages.ERROR, "Некорректные данные в форме")
             return redirect('add_snippet')
     else:
-        context['addform'] = AddSnippetForm(
-            initial={
-                'user': 'AnonymousUser',
-            }
-        )
+         if request.user.is_authenticated:
+            context['addform'] = AddSnippetForm(
+                initial={
+                    'user': request.user.username,
+                }
+            )
+         else:
+             context['addform'] = AddSnippetForm(
+                 initial={
+                     'user': 'AnonymousUser',
+                 }
+             )
     return render(request, 'pages/add_snippet.html', context)
 
 
@@ -53,13 +60,22 @@ def view_snippet_page(request, id):
     context = get_base_context(request, 'Просмотр сниппета')
     try:
         record = Snippet.objects.get(id=id)
-        context['addform'] = AddSnippetForm(
-            initial={
-                'user': 'AnonymousUser',
-                'name': record.name,
-                'code': record.code,
-            }
-        )
+        if request.user.is_authenticated:
+            context['addform'] = AddSnippetForm(
+                initial={
+                    'user': request.user.username,
+                    'name': record.name,
+                    'code': record.code,
+                }
+            )
+        else:
+            context['addform'] = AddSnippetForm(
+                initial={
+                    'user': 'AnonymousUser',
+                    'name': record.name,
+                    'code': record.code,
+                }
+            )
     except Snippet.DoesNotExist:
         raise Http404
     return render(request, 'pages/view_snippet.html', context)
